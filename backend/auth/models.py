@@ -1,22 +1,24 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
-class CreateDIDRequest(BaseModel):
-    name: str
-    email: str
-    phone: str
+class DIDDocument(BaseModel):
+    id: str = Field(..., description="Full DID URI, e.g. did:xrpl:test:<classic_address>")
+    verificationMethod: list
+    authentication: list
+    service: list = Field(default_factory=list)
 
-class DIDResponse(BaseModel):
+class DIDCreateRequest(BaseModel):
+    seed: Optional[str] = None
+
+
+class ChallengeRequest(BaseModel):
     did: str
-    xrpl_address: str
-    attestation_tx_hash: str
 
-class KYCRequest(BaseModel):
+class AuthPayload(BaseModel):
     did: str
-    document_type: str  # "passport", "national_id", etc.
-    document_ipfs_hash: str
-    provider: str = "fractal"  # Default KYC provider
+    challenge: str
+    signature: str
 
-class KYCResponse(BaseModel):
-    status: str  # "pending", "verified", "rejected"
-    kyc_tx_hash: Optional[str] = None
+class LoginRequest(BaseModel):
+    did: str
+    signature: str  # hex-encoded signature over the nonce

@@ -1,129 +1,53 @@
 from fastapi import APIRouter, HTTPException, status
-from auth.models import CreateDIDRequest, DIDResponse, KYCRequest, KYCResponse
-import uuid
+from xrpl.asyncio.transaction import autofill_and_sign, submit
+from xrpl.models.transactions import DIDSet
+from xrpl.asyncio.wallet import generate_faucet_wallet
+import os
+from auth.services.ipfs import store_in_ipfs
 from db.db import supabase_client
+from auth.xrpl import xrpl_client 
+
+# Load environment variables
+NETWORK = os.getenv("XRPL_NETWORK")
 
 did_router = r = APIRouter()
 
-# Helper Functions
-def generate_xrpl_address():
-    """Mock function to generate XRPL address"""
-    return f"rUser{str(uuid.uuid4())[:8]}..."
+@r.post("", status_code=status.HTTP_201_CREATED)
+async def create_did():
+    wallet = await generate_faucet_wallet(xrpl_client)
 
-def submit_to_kyc_provider(data: dict, provider: str):
-    """Mock KYC submission to external provider"""
-    # In production, call Fractal ID/Onfido API here
-    return {"status": "verified", "tx_hash": f"KYC_{str(uuid.uuid4())[:8]}"}
+    supabase_client.table("wallets").insert({
+        "classic_address": wallet.classic_address,
+        "public_key": wallet.public_key,
+        "seed": wallet.seed
+    }).execute()
 
-@r.post("/did", response_model=DIDResponse, status_code=status.HTTP_201_CREATED)
-async def create_did(request: CreateDIDRequest):
-    """Create a new Decentralized Identity (DID) on XRPL"""
-    did = f"did:xrpl:{str(uuid.uuid4())}"
-    xrpl_address = generate_xrpl_address()
-    
-    try:
-        # Insert into Supabase
-        result = supabase_client.table("dids").insert({
-            "did": did,
-            "xrpl_address": xrpl_address,
-            "name": request.name,
-            "email": request.email,
-            "phone": request.phone,
-            "status": "active"
-        }).execute()
-        
-        if not result.data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create DID"
-            )
-            
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error: {str(e)}"
-        )
-    
-    return {
-        "did": did,
-        "xrpl_address": xrpl_address,
-        "attestation_tx_hash": f"ATTEST_{str(uuid.uuid4())[:8]}"
+    did = f"did:xrpl:{NETWORK}:{wallet.classic_address}"
+    did_doc = {
+        "@context": "https://www.w3.org/ns/did/v1",
+        "id": did,
+        "verificationMethod": [{
+            "id": did + "#key-1",
+            "type": "Ed25519VerificationKey2018",
+            "controller": did,
+            "publicKeyHex": wallet.public_key
+        }]
     }
 
-@r.post("/kyc", response_model=KYCResponse)
-async def verify_kyc(request: KYCRequest):
-    """Submit KYC documents for verification"""
-    # Check if DID exists
-    did_exists = supabase_client.table("dids").select("did").eq("did", request.did).execute()
-    if not did_exists.data:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="DID not found"
-        )
-    
-    # Submit to KYC provider
-    kyc_result = submit_to_kyc_provider(
-        {
-            "did": request.did,
-            "document_type": request.document_type,
-            "document_hash": request.document_ipfs_hash
-        },
-        provider=request.provider
+    ipfs_uri = store_in_ipfs(did_doc)
+    uri_hex  = ipfs_uri.encode("utf-8").hex()
+
+    # Build transaction
+    tx = DIDSet(
+        account = wallet.classic_address,
+        uri=uri_hex
     )
-    
-    try:
-        # Store KYC request
-        kyc_data = {
-            "did": request.did,
-            "document_type": request.document_type,
-            "document_ipfs_hash": request.document_ipfs_hash,
-            "provider": request.provider,
-            "status": kyc_result["status"],
-            "tx_hash": kyc_result["tx_hash"]
-        }
-        
-        supabase_client.table("kyc_requests").insert(kyc_data).execute()
-        
-        # Update DID status if verified
-        if kyc_result["status"] == "verified":
-            supabase_client.table("dids").update({"kyc_status": "verified"}).eq("did", request.did).execute()
-            
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to process KYC: {str(e)}"
-        )
-    
-    return {
-        "status": kyc_result["status"],
-        "kyc_tx_hash": kyc_result["tx_hash"]
-    }
+    # Sign and submit
+    signed = await autofill_and_sign(tx, xrpl_client, wallet)
+    resp = await submit(signed, xrpl_client)
 
-@r.get("/dids/{did}/status")
-async def check_did_status(did: str):
-    """Check DID and KYC status"""
-    try:
-        # Get DID info
-        did_info = supabase_client.table("dids").select("*").eq("did", did).execute()
-        if not did_info.data:
-            raise HTTPException(status_code=404, detail="DID not found")
-        
-        # Get latest KYC status
-        kyc_status = supabase_client.table("kyc_requests")\
-            .select("status")\
-            .eq("did", did)\
-            .order("created_at", desc=True)\
-            .limit(1)\
-            .execute()
-        
-        return {
-            "did": did,
-            "status": did_info.data[0]["status"],
-            "kyc_status": kyc_status.data[0]["status"] if kyc_status.data else "pending"
-        }
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error: {str(e)}"
-        )
+    if resp.result.get("engine_result") != "tesSUCCESS":
+        raise HTTPException(400, detail=resp.result)
+    
+    # brand new wallet—return the seed so the client can back it up
+    return {"result": resp.result, "did": did, "wallet_seed": wallet.seed}

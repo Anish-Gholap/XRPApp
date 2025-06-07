@@ -7,6 +7,9 @@ requires-python = ">=3.12"
 dependencies = [
     "dotenv>=0.9.9",
     "fastapi[standard]>=0.115.12",
+    "ipfshttpclient>=0.7.0",
+    "python-jose[cryptography]>=3.5.0",
     "supabase>=2.15.2",
     "uvicorn>=0.34.3",
+    "xrpl-py>=4.1.0",
 ]
