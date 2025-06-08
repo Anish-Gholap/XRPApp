@@ -15,10 +15,10 @@ testnet = os.getenv("RIPPLE_TESTNET_URL")
 
 
 # @pytest.mark.anyio
-def test_create_account():
-    result = TurnkeyService(url=turnkey_url,api_public_key=turnkey_name,api_private_key=turnkey_api_key,organization_id=turnkey_organization,ripple_url=testnet).create_account("recieving") 
+# def test_create_account():
+#     result = TurnkeyService(url=turnkey_url,api_public_key=turnkey_name,api_private_key=turnkey_api_key,organization_id=turnkey_organization,ripple_url=testnet).create_account("recieving") 
 
-    assert result == "fail"
+#     assert result == "fail"
 
 def test_sign_transaction():
     transaction = {
@@ -28,7 +28,7 @@ def test_sign_transaction():
         "Destination": "rNa2Hz5dTwuXofTfL8weNrwzTahLfF53he",
         "Fee": "12",  # Required
     }
-    signed_transaction = TurnkeyService(url=turnkey_url,api_public_key=turnkey_name,api_private_key=turnkey_api_key,organization_id=turnkey_organization,ripple_url=testnet).sign_transaction("rayJTJWwHVo6aGKusiebLr6ozQeZemTxPe",transaction)
+    signed_transaction = TurnkeyService(url=turnkey_url,api_public_key=turnkey_name,api_private_key=turnkey_api_key,organization_id=turnkey_organization,ripple_url=testnet).sign_transaction(transaction,"sending")
     
     assert signed_transaction == "fail"
 

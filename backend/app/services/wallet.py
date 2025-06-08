@@ -108,8 +108,8 @@ class TurnkeyService(WalletService):
     def _get_suborg(self, username: str) -> str | None:
         data = {
             "organizationId": self.organization_id,
-            "filterType": "NAME",
-            "filterValue": f"{username}-sub-org",
+            "filterType": "USERNAME",
+            "filterValue": username,
         }
 
         headers = {
@@ -118,7 +118,9 @@ class TurnkeyService(WalletService):
             'X-Stamp': self._stamp(data),
         }
 
+
         resp = requests.post(f"{self.url}/query/list_suborgs", headers=headers, json=data)
+        print(resp.text)
         if resp.status_code == 200:
             return resp.json()["organizationIds"]
         else:
@@ -179,18 +181,62 @@ class TurnkeyService(WalletService):
         
         signature.upper()
                 
+    def _get_wallet_address(self, username: str) -> str:
+        sub_orgs = self._get_suborg(username)
+        if not sub_orgs:
+            raise HTTPException(status_code=404, detail="Sub-organization not found")
+        
+        sub_org_id = sub_orgs[0]
+        payload = {
+            "organizationId": sub_org_id,
+            "filterType": "NAME",
+            "filterValue": f"{username}-xrp-wallet",
+        }
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-Stamp': self._stamp(payload),
+        }
+        resp = requests.post(f"{self.url}/query/list_wallets", headers=headers, json=payload)
+        if resp.status_code != 200:
+            print(resp.text)
+            raise HTTPException(status_code=404, detail="bad request params")
+        data = resp.json()
+        print(data)
+        if not data["wallets"]:
+            raise HTTPException(status_code=404, detail="Wallet not found")
+        wallet_id =  data["wallets"][0]["walletId"]
+        payload = {
+            "walletId": wallet_id,
+            "organizationId": sub_org_id,
+        }
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-Stamp': self._stamp(payload),
+        }
+        resp = requests.post(f"{self.url}/query/get_wallet", headers=headers, json=payload) 
+        if resp.status_code != 200:
+            print(resp.text)
+            raise HTTPException(status_code=404, detail="bad request params")
+        data = resp.json()
+        print(data)
+        if not data["wallet"]["addresses"]:
+            raise HTTPException(status_code=404, detail="No addresses found for wallet")
+        return data
 
     def create_account(self,username:str) -> str:
         result = self._get_suborg(username)
-        print(result)
         if len(result) == 0:
             return self._create_suborg(username)
         else:
             return result
 
     
-    def sign_transaction(self,address: dict,transaction:str) -> bool:
-        signature = self._sign_raw_payload(address,transaction)
+    def sign_transaction(self,transaction: dict,username: str) -> bool:
+        signature = self._sign_raw_payload(self._get_wallet_address(username),transaction, self._get_suborg(username)[0])
+        if not signature:
+            raise HTTPException(status_code=500, detail="Failed to sign transaction")
         signed_transaction = {
             **transaction,
             "TxnSignature": signature,
