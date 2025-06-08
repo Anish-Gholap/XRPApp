@@ -11,9 +11,12 @@ Migrant workers are a crucial pillar of accelerating economies in Southeast Asia
 
 To address these structural issues that perpetuate inequitable financial dependence, our dApp leverages the XRP Ledger to empower low-wage migrant workers in Southeast Asia with a platform for:
 
+- **Trackable and Immutable loan history**: On successful posting of a loan request, an nft of the loan listing will be created where only the lender can burn the nft after fulfillment.
 - **Transparent Remittances**: Send XRP cross-border at minimal cost and high speed.  
 - **P2P Microloans**: Offer collateralized or uncollateralized loans directly on XRPL.  
 - **On-Chain Credit Scoring**: Evaluate creditworthiness using immutable remittance history.
+
+
 
 ---
 
@@ -24,11 +27,11 @@ To address these structural issues that perpetuate inequitable financial depende
 - **Behavioral Scoring**: Analyze remittance patterns (frequency, volume, diverse destinations) with `xrpl-py` or `xrpl.js`.  
 - **Risk Profiles**: Apply rule-based heuristics or simple ML models to generate a credit score; store off-chain (e.g., PostgreSQL) keyed by DID.
 
-### 2. Privacy Layer with Zero-Knowledge Proofs
+### 3. Privacy Layer with Zero-Knowledge Proofs
 - **Verifiable Presentations**: Users consent to share ZKPs of their transaction record, revealing only the necessary attestations without exposing raw data.  
 - **Trust Building**: Leverages blockchain-native behaviors rather than centralized data to democratize credit access.
 
-### 3. Secure Authentication with Decentralized Identity (DID)
+### 4. Secure Authentication with Decentralized Identity (DID)
 - **DID Creation**: Anchor self-sovereign identities on XRPL using the XLS-40 `DIDSet` transaction.  
 - **Challenge–Response Flow**:  
   1. Frontend requests a nonce from `/auth/request-challenge`.  
@@ -49,6 +52,48 @@ To address these structural issues that perpetuate inequitable financial depende
 
 - **Settlement & Repayment**:  
   Loans repaid in XRP or IOUs. Hooks enforce time-based conditions and automate default handling.
+
+## NFT Loan Collateral System
+
+The XRP Ledger also supports Non-Fungible Tokens (NFTs) which can be used as loan collateral. The API provides endpoints for NFT operations:
+
+### NFT Operations
+
+1. Mint NFT: Create a new NFT on the XRP Ledger
+   - /api/xrp/loan/nft/mint
+   - Requires wallet address, seed, and URI pointing to NFT metadata
+
+2. Create Sell Offer: List an NFT for sale or as collateral
+   - /api/xrp/loan/nft/sell
+   - Can specify a destination (specific buyer/borrower)
+   - Can set an expiration date (loan term)
+
+3. Accept Sell Offer: Accept an NFT offer (claim collateral)
+   - /api/xrp/loan/nft/accept
+   - Used when a loan defaults and collateral is claimed
+
+4. Burn NFT: Destroy an NFT (release collateral)
+   - /api/xrp/loan/nft/burn
+   - Can be used to release collateral when a loan is fully repaid
+
+5. View NFTs: Get all NFTs owned by an account
+   - /api/xrp/loan/nft/{address}
+
+### NFT Loan Process
+
+1. Collateral Setup:
+   - Borrower mints an NFT or uses an existing one
+   - NFT represents the collateral (e.g., property, vehicle title)
+   
+2. Loan Disbursement:
+   - Borrower creates a sell offer for their NFT to the lender with an expiration matching the loan term
+   - Lender funds the loan with issued currency
+   
+3. Loan Repayment:
+   - If borrower repays in full, the sell offer expires or is cancelled
+   - If borrower defaults, lender can accept the NFT sell offer to claim the collateral
+
+This system provides a trustless mechanism for collateralized loans on the XRP Ledger.
 
 ---
 
