@@ -5,11 +5,16 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "cryptography>=45.0.3",
     "dotenv>=0.9.9",
     "fastapi[standard]>=0.115.12",
     "ipfshttpclient>=0.7.0",
     "python-jose[cryptography]>=3.5.0",
+    "pytest>=8.4.0",
+    "pytest-asyncio>=1.0.0",
+    "requests>=2.32.3",
     "supabase>=2.15.2",
+    "trio>=0.30.0",
     "uvicorn>=0.34.3",
     "xrpl-py>=4.1.0",
 ]
