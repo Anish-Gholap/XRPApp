@@ -58,6 +58,7 @@ To address these structural issues that perpetuate inequitable financial depende
 - **Live Demo**: [Canva Slide with Video](https://www.canva.com/design/DAGpoyh7hAE/Tixfbu6zGVSUf1_7SDKuNA/edit?ui=eyJEIjp7IlQiOnsiQSI6IlBCNWRCU014dDUzaE5yZFcifX19)
 - **GitHub Repo**: [Anish-Gholap/XRPApp](https://github.com/Anish-Gholap/XRPApp)
 - **UI Screenshots**: [Google Drive with UI Screenshots]([url](https://drive.google.com/drive/folders/1NVOYAIutT-n1JAGy-WU06x_7FnT7J0re?usp=sharing)):https://drive.google.com/drive/folders/1NVOYAIutT-n1JAGy-WU06x_7FnT7J0re?usp=sharing
+- **Block Explorer Link for Transactions from Our dApp on the XRP Ledger testnet**: https://testnet.xrpl.org/transactions/4D6D8A733342271AF83D20C7B6AD9DDD9348B8B1C22BCE5DBB4CE9FBBC0406DA
 ---
 
 ## 👥 Team & Contact
