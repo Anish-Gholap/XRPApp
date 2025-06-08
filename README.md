@@ -57,7 +57,7 @@ To address these structural issues that perpetuate inequitable financial depende
 - **Slides**: [Canva Presentation](https://www.canva.com/design/DAGpoyh7hAE/Tixfbu6zGVSUf1_7SDKuNA/edit?utm_content=DAGpoyh7hAE&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 - **Live Demo**: [Canva Slide with Video](https://www.canva.com/design/DAGpoyh7hAE/Tixfbu6zGVSUf1_7SDKuNA/edit?ui=eyJEIjp7IlQiOnsiQSI6IlBCNWRCU014dDUzaE5yZFcifX19)
 - **GitHub Repo**: [Anish-Gholap/XRPApp](https://github.com/Anish-Gholap/XRPApp)
-
+- **UI Screenshots**: [Google Drive with UI Screenshots of Main Flows] (https://drive.google.com/drive/folders/1NVOYAIutT-n1JAGy-WU06x_7FnT7J0re?usp=sharing)
 ---
 
 ## 👥 Team & Contact
