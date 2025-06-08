@@ -1,4 +1,4 @@
-# XRP Migrant Finance dApp
+# XRP MyGrant Microloans App
 
 **🚀 150-Character Summary**  
 > **Offers** a transparent credit scoring, peer-to-peer lending, and remittance platform to **support** underserved migrant workers in Singapore **solve** financial exclusion **with** XRPL-based on-chain credit scoring and decentralized identity (DID)
