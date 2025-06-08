@@ -82,3 +82,54 @@ To address these structural issues that perpetuate inequitable financial depende
 - Multi-Purpose Tokens & DID & Credential  
 - Best Cross-Chain App Leveraging Axelar Bridge (GMP)  
 - Best Developer Tooling
+
+# XRP Lending System
+
+## How XRP Ledger Loan System Works
+
+This API implements a lending system on the XRP Ledger using issued currencies. The process involves several steps:
+
+### Loan Funding Process
+
+1. **DefaultRipple Flag Setup**: 
+   - The issuer account is configured with the DefaultRipple flag enabled
+   - This allows issued currencies to ripple (flow) through the issuer
+
+2. **Trust Line Creation**:
+   - Both lender and borrower establish trust lines to the issuer
+   - Trust lines specify the maximum amount of the currency they're willing to hold
+
+3. **Currency Issuance**:
+   - The issuer creates the digital currency (e.g., "SGD")
+   - Currency is issued to the lender's account
+
+4. **Loan Payment**:
+   - The lender sends the issued currency to the borrower
+   - This transaction represents the loan disbursement
+   - The XRP Ledger records this obligation in its distributed ledger
+
+### Loan Repayment Process
+
+1. **Repayment Transaction**:
+   - The borrower sends the issued currency back to the lender
+   - This typically includes principal plus interest
+   - The transaction settles the debt obligation on the ledger
+
+2. **Final Settlement**:
+   - The loan obligation is settled on the ledger
+   - Balances of both parties are updated accordingly
+
+### Benefits of XRPL for Loans
+
+- **Immutable Record**: All transactions are permanently recorded on the XRP Ledger
+- **Transparency**: Loan terms and payments are publicly verifiable
+- **Speed**: Transactions settle in 3-5 seconds
+- **Low Cost**: Transaction fees are minimal (fraction of a cent)
+- **Programmable**: Currency issuance can have restrictions or conditions
+
+### API Endpoints
+
+- `/fund-loan`: Handles the complete loan setup and funding process
+- `/repay-loan`: Processes loan repayments from borrower to lender
+- `/balance/{address}`: Check balances of any XRP address
+- `/send-xrp`: Send native XRP between wallets
